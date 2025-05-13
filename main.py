@@ -1,4 +1,6 @@
-from fastapi import FastAPI
+from typing import Annotated
+
+from fastapi import FastAPI, Path
 from pydantic import BaseModel, EmailStr
 
 import uvicorn
@@ -38,7 +40,7 @@ def list_items():
     ]
 
 @app.get("/items/{item_id}/")
-def get_item_by_id(item_id: int):
+def get_item_by_id(item_id: Annotated[int, Path(ge=1, lt=1_000_000)]):
     return {
         "item_id": item_id,
         "name": "no_name"
