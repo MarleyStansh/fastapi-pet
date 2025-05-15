@@ -2,15 +2,13 @@ from typing import TYPE_CHECKING
 
 
 from .base import Base
-from sqlalchemy import String, Text, ForeignKey
-from sqlalchemy.orm import Mapped, mapped_column, relationship
+from sqlalchemy import String, Text
+from sqlalchemy.orm import Mapped, mapped_column
+from .mixins import UserRelationshipMixin
 
 
-if TYPE_CHECKING:
-    from .user import User
-
-
-class Post(Base):
+class Post(Base, UserRelationshipMixin):
+    _user_back_populates = "posts"
 
     title: Mapped[str] = mapped_column(String(100), unique=True)
     body: Mapped[str] = mapped_column(
@@ -18,9 +16,3 @@ class Post(Base):
         default="",
         server_default="",
     )
-
-    user_id: Mapped[int] = mapped_column(
-        ForeignKey("users.id"),
-    )
-
-    user: Mapped["User"] = relationship(back_populates="posts")
