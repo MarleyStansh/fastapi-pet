@@ -1,6 +1,10 @@
 from jwt.exceptions import InvalidTokenError
 from fastapi import APIRouter, Depends, Form, HTTPException, status
-from fastapi.security import HTTPBearer, HTTPAuthorizationCredentials
+from fastapi.security import (
+    HTTPBearer,
+    HTTPAuthorizationCredentials,
+    OAuth2PasswordBearer,
+)
 from users.schemas import UserSchema
 from pydantic import BaseModel
 from auth import utils as auth_utils
@@ -13,7 +17,10 @@ class TokenInfo(BaseModel):
 
 router = APIRouter(prefix="/jwt", tags=["JWT"])
 
-http_bearer = HTTPBearer()
+# http_bearer = HTTPBearer()
+oauth2_scheme = OAuth2PasswordBearer(
+    tokenUrl="/api/v1/demo_auth/jwt/login/",
+)
 
 john = UserSchema(
     username="john",
@@ -56,9 +63,8 @@ def validate_auth_user(
 
 
 def get_current_token_payload(
-    creds: HTTPAuthorizationCredentials = Depends(http_bearer),
+    token: str = Depends(oauth2_scheme),
 ) -> UserSchema:
-    token = creds.credentials
     try:
         payload = auth_utils.decode_jwt(
             token=token,
