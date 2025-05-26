@@ -21,6 +21,10 @@ from api_v1.demo_auth.validation import (
     get_current_token_payload,
 )
 from .crud import users_db
+from sqlalchemy.ext.asyncio import AsyncSession
+from sqlalchemy import select, Result
+from core.models.user import SecurityUser
+from core.models import db_helper
 
 
 class TokenInfo(BaseModel):
@@ -35,17 +39,20 @@ http_bearer = HTTPBearer(auto_error=False)
 router = APIRouter(prefix="/jwt", tags=["JWT"], dependencies=[Depends(http_bearer)])
 
 
-def validate_auth_user(
+async def validate_auth_user(
     username: str = Form(),
     password: str = Form(),
+    session: AsyncSession = Depends(db_helper.scoped_session_dependency),
 ):
     unauthed_exc = HTTPException(
         status_code=status.HTTP_401_UNAUTHORIZED,
         detail="Invalid username or password",
     )
-    if not (user := users_db.get(username)):
+    stmt = select(SecurityUser).where(SecurityUser.username == username)
+    result: Result = await session.execute(stmt)
+    user = result.scalar_one_or_none()
+    if not user:
         raise unauthed_exc
-
     if not auth_utils.validate_password(
         password=password, hashed_password=user.password
     ):
@@ -70,7 +77,10 @@ def get_current_active_auth_user(
 
 
 @router.post("/login/", response_model=TokenInfo)
-def auth_user_issue_jwt(user: UserSchema = Depends(validate_auth_user)):
+async def auth_user_issue_jwt(
+    session: AsyncSession = Depends(db_helper.scoped_session_dependency),
+    user: UserSchema = Depends(validate_auth_user),
+):
     access_token = create_access_token(user=user)
     refresh_token = create_refresh_token(user=user)
     return TokenInfo(

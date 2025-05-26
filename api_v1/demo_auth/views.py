@@ -2,9 +2,13 @@ import secrets
 import time
 from typing import Annotated, Any
 import uuid
-
+from core.models import db_helper
+from core.models.user import SecurityUser
+from sqlalchemy.ext.asyncio import AsyncSession
 from fastapi import APIRouter, Depends, HTTPException, status, Header, Response, Cookie
 from fastapi.security import HTTPBasic, HTTPBasicCredentials
+from .crud import registrate_user
+from users.schemas import UserCreate, UserSchema
 
 router = APIRouter(prefix="/demo_auth", tags=["Demo Auth"])
 
@@ -124,3 +128,16 @@ def demo_outh_logout_cookie(
     return {
         "message": f"Bye, {username}",
     }
+
+
+@router.post(
+    "/register/", response_model=UserCreate, status_code=status.HTTP_201_CREATED
+)
+async def register_user_with_form(
+    user_in: UserCreate,
+    session: AsyncSession = Depends(db_helper.scoped_session_dependency),
+):
+    return await registrate_user(
+        session=session,
+        user=user_in,
+    )

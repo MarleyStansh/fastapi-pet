@@ -12,6 +12,8 @@ from core.models import (
     Product,
     OrderProductAssociation,
 )
+from api_v1.demo_auth.crud import registrate_user
+from users.schemas import UserCreate
 
 
 async def create_user(session: AsyncSession, username: str) -> User:
@@ -325,8 +327,12 @@ async def demo_m2m(session: AsyncSession):
 
 async def main():
     async with db_helper.session_factory() as session:
-        # await main_relations(session)
-        await demo_m2m(session)
+        await registrate_user(
+            session=session,
+            user=UserCreate(
+                username="Sam55", password="qwerty", email="sam55@example.com"
+            ),
+        )
 
 
 if __name__ == "__main__":

@@ -15,3 +15,8 @@ class UserSchema(BaseModel):
     active: bool = True
 
     model_config: ClassVar = ConfigDict(strict=True)
+
+
+class UserCreate(CreateUser):
+
+    password: str

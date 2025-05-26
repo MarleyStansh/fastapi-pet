@@ -17,8 +17,21 @@ class User(Base):
 
     profile: Mapped["Profile"] = relationship(back_populates="user")
 
+    password: Mapped[str]
+
     def __str__(self):
         return f"{self.__class__.__name__}(id={self.id}, username{self.username!r})"
 
     def __repr__(self):
         return str(self)
+
+
+class SecurityUser(Base):
+
+    username: Mapped[str] = mapped_column(String(32), unique=True)
+
+    password: Mapped[str]
+
+    email: Mapped[str | None]
+
+    active: Mapped[bool] = mapped_column(default=True)
