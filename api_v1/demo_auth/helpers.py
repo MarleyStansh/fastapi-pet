@@ -1,7 +1,9 @@
-from users.schemas import UserSchema
+from .schemas import UserSchema
 from auth import utils as auth_utils
 from core.config import settings
 from datetime import timedelta
+from sqlalchemy.ext.asyncio import AsyncSession
+
 
 TOKEN_TYPE_FIELD = "type"
 ACCESS_TOKEN_TYPE = "access"
@@ -26,7 +28,10 @@ def create_jwt(
     return token
 
 
-def create_access_token(user: UserSchema) -> str:
+async def create_access_token(
+    user: UserSchema,
+    session: AsyncSession,
+) -> str:
     jwt_payload = {
         "sub": user.username,
         "username": user.username,
@@ -39,7 +44,10 @@ def create_access_token(user: UserSchema) -> str:
     )
 
 
-def create_refresh_token(user: UserSchema) -> str:
+async def create_refresh_token(
+    user: UserSchema,
+    session: AsyncSession,
+) -> str:
     jwt_payload = {"sub": user.username}
     return create_jwt(
         token_type=REFRESH_TOKEN_TYPE,

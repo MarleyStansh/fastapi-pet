@@ -1,4 +1,4 @@
-from users.schemas import UserSchema, UserCreate
+from .schemas import UserSchema, UserCreate
 from auth import utils as auth_utils
 from sqlalchemy.ext.asyncio import AsyncSession
 from core.models.user import SecurityUser
@@ -21,7 +21,7 @@ users_db: dict[str, UserSchema] = {
 }
 
 
-async def registrate_user(session: AsyncSession, user: UserCreate) -> SecurityUser:
+async def register_user(session: AsyncSession, user: UserCreate) -> SecurityUser:
     user_dict = user.model_dump()
     user_dict["password"] = auth_utils.hash_password(user_dict.get("password"))
     user = SecurityUser(**user_dict)
